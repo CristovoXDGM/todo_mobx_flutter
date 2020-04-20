@@ -9,6 +9,12 @@ part of 'login_store.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$LoginStore on _LoginStoreBase, Store {
+  Computed<Function> _$loginPressedComputed;
+
+  @override
+  Function get loginPressed =>
+      (_$loginPressedComputed ??= Computed<Function>(() => super.loginPressed))
+          .value;
   Computed<bool> _$isFormValidComputed;
 
   @override
@@ -90,6 +96,23 @@ mixin _$LoginStore on _LoginStoreBase, Store {
     }, _$isLoadingAtom, name: '${_$isLoadingAtom.name}_set');
   }
 
+  final _$loggedInAtom = Atom(name: '_LoginStoreBase.loggedIn');
+
+  @override
+  bool get loggedIn {
+    _$loggedInAtom.context.enforceReadPolicy(_$loggedInAtom);
+    _$loggedInAtom.reportObserved();
+    return super.loggedIn;
+  }
+
+  @override
+  set loggedIn(bool value) {
+    _$loggedInAtom.context.conditionallyRunInAction(() {
+      super.loggedIn = value;
+      _$loggedInAtom.reportChanged();
+    }, _$loggedInAtom, name: '${_$loggedInAtom.name}_set');
+  }
+
   final _$loginAsyncAction = AsyncAction('login');
 
   @override
@@ -133,7 +156,7 @@ mixin _$LoginStore on _LoginStoreBase, Store {
   @override
   String toString() {
     final string =
-        'isPasswordVisible: ${isPasswordVisible.toString()},email: ${email.toString()},password: ${password.toString()},isLoading: ${isLoading.toString()},isFormValid: ${isFormValid.toString()},isPasswordValid: ${isPasswordValid.toString()}';
+        'isPasswordVisible: ${isPasswordVisible.toString()},email: ${email.toString()},password: ${password.toString()},isLoading: ${isLoading.toString()},loggedIn: ${loggedIn.toString()},loginPressed: ${loginPressed.toString()},isFormValid: ${isFormValid.toString()},isPasswordValid: ${isPasswordValid.toString()}';
     return '{$string}';
   }
 }

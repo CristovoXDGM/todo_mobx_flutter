@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:mobx/mobx.dart';
 import 'package:todomobx/stores/login_store.dart';
 import 'package:todomobx/widgets/custom_icon_button.dart';
 import 'package:todomobx/widgets/custom_text_field.dart';
@@ -13,6 +14,31 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   LoginStore loginStore = LoginStore();
+  // o disposer tem como seu principal objetivo evitar o armazenamento desencessário de dados na memória, fazendo com que o processo não fique executando em um loop eterno
+  ReactionDisposer disposer;
+
+  //Conhecido como reactios no Mobx, são as reações de acordo com as funões e metodos
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    // o disposer recebe a reaction para poder limpar a memória posteriormente ao mudar/avançar de tela
+    disposer = reaction((_) => loginStore.loggedIn, (loggedIn) {
+      if (loginStore.loggedIn) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => ListScreen()));
+      }
+    });
+    //Pode ser utilizado também ao invés da própria função reaction, em maioria dos casos ele é utilizado, sendo assim a função reaction pouco utilizada; (OBS: ambos são reactions)
+    // autorun((_) {
+    //   //login implementado utilizando o mobx
+    //   print(loginStore.loggedIn);
+    //   if (loginStore.loggedIn) {
+    //     Navigator.of(context).pushReplacement(
+    //         MaterialPageRoute(builder: (context) => ListScreen()));
+    //   }
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,14 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Theme.of(context).primaryColor.withAlpha(100),
                           textColor: Colors.white,
                           onPressed: loginStore.isFormValid
-                              ? () {
-                                  loginStore.login().then((_) => {
-                                        Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ListScreen()))
-                                      });
-                                }
+                              ? loginStore.loginPressed
                               : null,
                         );
                       }),
@@ -95,5 +114,13 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+
+    disposer();
   }
 }
